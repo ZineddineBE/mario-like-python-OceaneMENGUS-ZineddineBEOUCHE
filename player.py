@@ -1,44 +1,47 @@
-from typing import Any
 import pygame
-import animation
 
-#Création du joueur
-class Player(pygame.sprite.Sprite):
+class Player:
+    def __init__(self, x, y, speed):
+        self.x = x
+        self.y = y
+        self.speed = speed #Vitesse du joueur
+        self.frame_index = 0 #Index de la frame actuelle pour l'animation
+        self.animation_speed = 3 #Vitesse de changement des frames pour l'animation.
+        self.frames = self.load_frames()
+        self.image = self.frames[self.frame_index] #Image actuelle du joueur
+        self.moving = False
 
-    def __init__(self):
-      super().__init__()
-      self.velocity = 4 #Vitesse de déplacement en px
-      self.width = 120
-      self.height = 68
+    def load_frames(self):
+        frames = []
+        for i in range(1, 11):
+            frame = pygame.image.load(f'assets/player/Walk ({i}).png').convert_alpha()
+            frame = pygame.transform.scale(frame, (120, 68))
+            frames.append(frame)
+        return frames
 
-      self.is_animating = False
-    
-      self.sprites = []
-      for i in range(1, 10):
-        self.sprites.append(pygame.image.load(f'Mario/assets/player/Walk/Walk{i}.png'))
+    def update(self, keys):
+        self.moving = False
+        # Déplacement du Player
+        if keys[pygame.K_q] or keys[pygame.K_LEFT]:
+            self.x -= self.speed
+            self.moving = True
+            if self.x < 0:
+                self.x = 0
 
-      self.current_sprite = 0
-      self.image = self.sprites[self.current_sprite]
-      self.rect = self.image.get_rect()
-      self.rect.x = 400
-      self.rect.y = 500   
+        elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            self.x += self.speed
+            self.moving = True
+            if self.x >= 930:
+                self.x = 0
 
-    def move_right(self):
-      self.rect.x += self.velocity
+        # Créer l'animation du Player
+        if self.moving:
+            if pygame.time.get_ticks() % self.animation_speed == 0:
+                self.frame_index = (self.frame_index + 1) % len(self.frames)
+        else:
+            self.frame_index = 0
 
-    def move_left(self):
-      self.rect.x -= self.velocity
+        self.image = self.frames[self.frame_index]
 
-    def animate(self):
-      self.is_animating = True
-
-    def update(self, speed):
-      if self.is_animating == True:
-        self.current_sprite += speed
-
-        if self.current_sprite >= len(self.sprites):
-          self.current_sprite = 0
-          self.is_animating = False
-
-        self.image = self.sprites[int(self.current_sprite)]
-      
+    def draw(self, screen):
+        screen.blit(self.image, (self.x, self.y))

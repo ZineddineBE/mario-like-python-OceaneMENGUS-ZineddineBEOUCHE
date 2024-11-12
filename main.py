@@ -1,63 +1,41 @@
 import pygame
-import sys
-from game import Game
+from player import Player
 
-#Charger les composants
 pygame.init()
 
-#Charger notre jeu
-game = Game()
+# Définition de la taille de la fenêtre
+screen_width = 1000
+screen_height = 750
 
-# Paramètres de la fenêtre
-pygame.display.set_caption("Mario Like - Océane Mengus x Zineddine Beouche")
+# Création de la fenêtre d'affichage
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Mario Like")
 
-screen = pygame.display.set_mode((1000,750))
+# Charger l'arrière-plan
+background = pygame.image.load('assets/BG/BG.png')
 
-background = pygame.image.load('Mario/assets/background/png/BG/BG.png')
+# Créer un joueur
+player = Player(300, 600, 3)
 
-#Maintenir la fenêtre
-running = True
+# Gestion du framerate
+clock = pygame.time.Clock()
+FPS = 60
 
-moving_sprites = pygame.sprite.Group()
-moving_sprites.add(game.player)
+# Boucle principale du jeu
+run = True
+while run:
+    # Dessine l'arrière-plan
+    screen.blit(background, (0, 0))
 
-#boucle tant que le jeu est actif
-while running:
+    keys = pygame.key.get_pressed() # Récupère l'état des touches du clavier
+    player.update(keys) # Met à jour l'état du joueur
+    player.draw(screen) # Affiche l'image du joueur
 
-   #Arrière plan
-   screen.blit(background, (0, 0)) #largeur / hauteur
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
 
+    pygame.display.flip() # Met à jour l'affichage
+    clock.tick(FPS) # Limite le jeu à 60 FPS
 
-   player_scaled = pygame.transform.scale(game.player.image, (game.player.width, game.player.height))
-   
-   
-
-   if game.pressed.get(pygame.K_RIGHT):
-      game.player.move_right()
-      game.player.animate()
-      if game.player.rect.x >= 930:
-         game.player.rect.x = 0
-   elif game.pressed.get(pygame.K_LEFT) and game.player.rect.x > 0:
-      game.player.animate()
-      game.player.move_left()
-   
-    #Si le joueur ferme cette fenêtre
-   for event in pygame.event.get():
-      #Que l'evenement est fermeture de fenêtre
-      if event.type == pygame.QUIT:
-         running = False
-         pygame.quit()
-      #Détecter si un joueur lâche une touche
-      elif event.type == pygame.KEYDOWN:
-        game.pressed[event.key] = True
-      elif event.type == pygame.KEYUP:
-        game.player.is_animating = False
-        game.pressed[event.key] = False
-        game.player.image = pygame.image.load('Mario/assets/player/Idle/Idle1.png')
-   
-   moving_sprites.update(0.2)
-   #Mettre à jour l'écran
-   pygame.display.flip()
-   
-
-      
+pygame.quit()
