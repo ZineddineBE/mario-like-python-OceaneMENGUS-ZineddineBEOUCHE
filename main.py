@@ -10,7 +10,7 @@ screen_height = 750
 
 # Création de la fenêtre d'affichage
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Mario Like")
+pygame.display.set_caption("Mario Like - Océane Mengus x Zineddine Beouche")
 
 # Charger l'arrière-plan
 background = pygame.image.load('assets/BG/BG.png')
@@ -46,19 +46,20 @@ while run:
     player.update(keys) # Met à jour l'état du joueur
     player.draw(screen) # Affiche l'image du joueur
     
+    
+    # Affiche l'image Idle du joueur quand le personnage ne bouge pas
+    if not (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]):
+        idle = pygame.image.load(f'assets/player/Idle (1).png').convert_alpha()
+        if player.facing_left:
+            player.image = pygame.transform.flip(idle, True, False)
+            player.image = pygame.transform.scale(player.image, (player.width, player.height))
+        else:
+            player.image = idle
+            player.image = pygame.transform.scale(player.image, (player.width, player.height))
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            run = False
-        elif event.type == pygame.KEYUP:
-            if player.facing_left:
-                player.facing_left = False
-                idle = pygame.image.load(f'assets/player/Idle (1).png').convert_alpha() # affiche le personnage en position neutre quand il ne bouge plus
-                player.image = pygame.transform.scale(idle, (player.width, player.height))
-
-            else:
-                player.facing_left = True
-                idle = pygame.image.load(f'assets/player/Idle (1).png').convert_alpha() # affiche le personnage en position neutre quand il ne bouge plus
-                player.image = pygame.transform.scale(idle, (player.width, player.height))
+            run = False    
     if floor.rect.colliderect(player.rect):
         resistence = (0, -10)
         floor_collision = True

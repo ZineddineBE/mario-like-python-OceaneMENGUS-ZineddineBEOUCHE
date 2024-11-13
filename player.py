@@ -6,21 +6,24 @@ class Player:
         self.y = y
         self.width = 120
         self.height = 68
-        self.speed = speed #Vitesse du joueur
-        self.frame_index = 0 #Index de la frame actuelle pour l'animation
-        self.animation_speed = 4 #Vitesse de changement des frames pour l'animation.
-        self.frames = self.load_frames()
-        self.image = self.frames[self.frame_index] #Image actuelle du joueur
+        self.speed = speed
+        self.frame_index = 0
+        self.animation_speed = 0.2
+        self.walk_frames = self.load_walk_frames()  # Frames de marche
+        self.image = self.walk_frames[self.frame_index]
         self.rect = self.image.get_rect(topleft=(self.x, self.y))
+        
+        # Variables de saut et gravité
         self.facing_left = False
-        self.moving = False
-        self.jump = 0
-        self.jump_up = 0
-        self.jump_down = 5
-        self.number_of_jump = 0
         self.is_jumped = False
+        self.velocity_y = 0  # Vitesse verticale
+        self.gravity = 1     # Gravité pour rendre le saut plus naturel
+        self.jump_strength = 15  # Force du saut
+        self.number_of_jump = 0  # Compte le nombre de sauts
+        self.jump_up = 0  
+        self.jump_down = 0  
 
-    def load_frames(self):
+    def load_walk_frames(self):
         frames = []
         for i in range(1, 10):
             frame = pygame.image.load(f'assets/player/Walk/Walk ({i}).png').convert_alpha()
@@ -30,43 +33,57 @@ class Player:
 
     def update(self, keys):
         self.moving = False
-        # Déplacement du Player
+
+        # Gestion des touches pour le mouvement horizontal
         if keys[pygame.K_q] or keys[pygame.K_LEFT]:
-            if not self.facing_left:  # Si le personnage ne fait pas déjà face à la gauche
-                self.facing_left = True
-                self.image = pygame.transform.flip(self.image, True, False)  # Retourne l'image vers la gauche
             self.x -= self.speed
+            self.facing_left = True
             self.moving = True
-            if self.x < 0:
-                self.x = 0
 
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            if self.facing_left:  # Si le personnage ne fait pas déjà face à la droite
-                self.facing_left = False
-                self.image = pygame.transform.flip(self.image, True, False)  # Retourne l'image vers la droite
             self.x += self.speed
+            self.facing_left = False
             self.moving = True
-            if self.x >= 930:
-                self.x = 0
-        
-        if keys[pygame.K_z] or keys[pygame.K_SPACE] or keys[pygame.K_UP]:
+
+        # Limite la position horizontale aux bords de l'écran
+        self.x = max(0, min(self.x, 930))
+
+        # Gestion du saut : permet un saut seulement si `number_of_jump` est 0
+        if self.number_of_jump == 0 and (keys[pygame.K_z] or keys[pygame.K_SPACE] or keys[pygame.K_UP]):
             self.is_jumped = True
-            self.number_of_jump += 1
+            self.velocity_y = -self.jump_strength
+            self.number_of_jump += 1  # Incrémente pour limiter à un saut
 
-        # Créer l'animation du Player
-        if self.moving == True:
-            self.frame_index += 0.2
-            if self.frame_index >= len(self.frames):
-                self.moving = False
+        # Applique la gravité si le joueur est en l'air
+        if self.is_jumped:
+            self.velocity_y += self.gravity
+            self.y += self.velocity_y
+            # Arrête le saut lorsque le joueur atteint le sol (ajuster la valeur selon le sol)
+            if self.y >= 650:  # Ajuster "650" à la position du sol
+                self.y = 650
+                self.is_jumped = False
+                self.velocity_y = 0
+                self.number_of_jump = 0  # Réinitialise le nombre de sauts quand le joueur touche le sol
+
+        # Choisir l'image du joueur en fonction de son état
+        if self.moving:
+            # Animation de marche
+            self.frame_index += self.animation_speed
+            if self.frame_index >= len(self.walk_frames):
                 self.frame_index = 0
-                
-            self.image = self.frames[int(self.frame_index)]
-            if self.facing_left:
-                self.image = pygame.transform.flip(self.image, True, False)
+            self.image = self.walk_frames[int(self.frame_index)]
+        else:
+            # Image Idle lorsque le joueur est au repos
+            idle = pygame.image.load(f'assets/player/Idle (1).png').convert_alpha()
+            self.image = pygame.transform.scale(idle, (self.width, self.height))
 
-    def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))
-    
+        # Appliquer la direction gauche/droite en fonction de `facing_left`
+        if self.facing_left:
+            self.image = pygame.transform.flip(self.image, True, False)
+
+        # Mise à jour de la position du rectangle du joueur
+        self.rect.topleft = (self.x, self.y)
+
     # Gestion du saut du joueur
     def player_jump(self):
         if self.is_jumped:
@@ -83,6 +100,11 @@ class Player:
                 self.is_jumped = False
 
         self.y = self.y - (5 * self.jump /2)
+
+    def draw(self, screen):
+        screen.blit(self.image, (self.x, self.y))
+
+
 
                 
 
