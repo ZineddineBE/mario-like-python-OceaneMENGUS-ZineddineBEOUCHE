@@ -3,6 +3,7 @@ from player import Player
 from floor import Floor
 
 pygame.init()
+pygame.mixer.init()
 
 # Définition de la taille de la fenêtre
 screen_width = 1000
@@ -16,7 +17,7 @@ pygame.display.set_caption("Mario Like - Océane Mengus x Zineddine Beouche")
 background = pygame.image.load('assets/BG/BG.png')
 
 # Créer un joueur
-player = Player(300, 0, 3)
+player = Player(300, 550, 3, screen_width)
 
 #Création du sol
 floor = Floor()
@@ -25,12 +26,17 @@ floor = Floor()
 gravity = (0, 10)
 resistence = (0, 0)
 
-#
+#Déclaration du booléen qui gère si le personnage est en collision avec le sol
 floor_collision = False
 
 # Gestion du framerate
 clock = pygame.time.Clock()
 FPS = 60
+
+# Chargement de la musique
+pygame.mixer.music.load('assets/sounds/TheForest.wav')
+pygame.mixer.music.set_volume(0.15)
+pygame.mixer.music.play()
 
 def game_gravity():
     player.y += gravity[1] + resistence[1]
@@ -45,19 +51,9 @@ while run:
     keys = pygame.key.get_pressed() # Récupère l'état des touches du clavier
     player.update(keys) # Met à jour l'état du joueur
     player.draw(screen) # Affiche l'image du joueur
-    
-    
-    # Affiche l'image Idle du joueur quand le personnage ne bouge pas
-    if not (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]):
-        idle = pygame.image.load(f'assets/player/Idle (1).png').convert_alpha()
-        if player.facing_left:
-            player.image = pygame.transform.flip(idle, True, False)
-            player.image = pygame.transform.scale(player.image, (player.width, player.height))
-        else:
-            player.image = idle
-            player.image = pygame.transform.scale(player.image, (player.width, player.height))
 
     for event in pygame.event.get():
+        
         if event.type == pygame.QUIT:
             run = False    
     if floor.rect.colliderect(player.rect):
@@ -70,7 +66,8 @@ while run:
     if player.is_jumped and floor_collision:
         if player.number_of_jump < 2:
             player.player_jump()
-
+    
+    
     game_gravity()
     floor.display_floor(screen) #affiche le sol
     pygame.display.flip() # Met à jour l'affichage
