@@ -45,7 +45,6 @@ class Player:
         # Son du jump
         self.jump_sound = pygame.mixer.Sound('assets/sounds/jump.wav')
         self.jump_sound.set_volume(0.5)
-
         
 
     def load_walk_frames(self):
@@ -66,26 +65,26 @@ class Player:
 
     def update(self, keys):
         self.moving = False   
-
+    
         # Gestion des touches pour le mouvement horizontal
         if keys[pygame.K_q] or keys[pygame.K_LEFT]:
             self.x -= self.speed
             self.facing_left = True
             self.moving = True
-
+    
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             self.x += self.speed
             self.facing_left = False
             self.moving = True
-
-        # Si le joueur dépasse le bord droit de l'écran, réapparaît à gauche
+    
+        # Si le joueur dépasse le bord droit de l'écran
         if self.x > self.screen_width:
-            self.x = -self.width  # Réapparaît à gauche de l'écran
-
-        # Limite la position horizontale aux bords de l'écran
-        # Prendre en compte la largeur du joueur pour la position droite
-        self.x = max(0, min(self.x, self.screen_width + self.width))
-
+            self.x = -self.width  # Réapparaît à gauche
+            
+    
+        # Limiter la position pour éviter de sortir de l'écran
+        self.x = max(-self.width, min(self.x, self.screen_width))
+    
         # Gestion du saut avec cooldown
         current_time = time.time()
         if (self.number_of_jump == 0 and 
@@ -116,7 +115,6 @@ class Player:
 
             # Arrêter le saut lorsque le joueur atteint le sol
             if self.y >= 650:
-                self.y = 650
                 self.is_jumped = False
                 self.velocity_y = 0
                 self.number_of_jump = 0

@@ -1,26 +1,27 @@
 import pygame
 from player import Player
 from floor import Floor
+from level import Level
 
 pygame.init()
 pygame.mixer.init()
 
 # Définition de la taille de la fenêtre
-screen_width = 1000
-screen_height = 750
+screen_width = 1280
+screen_height = 720
 
 # Création de la fenêtre d'affichage
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Mario Like - Océane Mengus x Zineddine Beouche")
 
-# Charger l'arrière-plan
-background = pygame.image.load('assets/BG/BG.png')
-
 # Créer un joueur
-player = Player(300, 550, 3, screen_width)
+player = Player(300, 550, 10, screen_width)
 
 #Création du sol
-floor = Floor()
+floor = Floor(screen_width, screen_height)
+
+#Création du niveau
+level = Level(screen_width, screen_height)
 
 #Création de la gravité
 gravity = (0, 10)
@@ -39,18 +40,15 @@ pygame.mixer.music.set_volume(0.15)
 pygame.mixer.music.play()
 
 def game_gravity():
-    player.y += gravity[1] + resistence[1]
+    if not floor.rect.colliderect(player.rect):
+        player.y += gravity[1] + resistence[1]
     player.rect.topleft = (player.x, player.y)
 
 # Boucle principale du jeu
 run = True
 while run:
-    # Dessine l'arrière-plan
-    screen.blit(background, (0, 0))
 
     keys = pygame.key.get_pressed() # Récupère l'état des touches du clavier
-    player.update(keys) # Met à jour l'état du joueur
-    player.draw(screen) # Affiche l'image du joueur
 
     for event in pygame.event.get():
         
@@ -66,12 +64,21 @@ while run:
     if player.is_jumped and floor_collision:
         if player.number_of_jump < 2:
             player.player_jump()
+
+
+    # Met à jour l'arrière-plan si nécessaire
+    level.update_background(player)  # Changer l'arrière-plan si le joueur dépasse la bordure droite
+
+    # Dessiner l'arrière-plan mis à jour
+    level.draw(screen)
+
+    player.update(keys)  # Met à jour l'état du joueur
+    player.draw(screen)  # Affiche le joueur
     
-    
-    game_gravity()
-    floor.display_floor(screen) #affiche le sol
-    pygame.display.flip() # Met à jour l'affichage
-    clock.tick(FPS) # Limite le jeu à 60 FPS
+    game_gravity()  # Applique la gravité
+    floor.display_floor(screen)  # Affiche le sol
+    pygame.display.flip()  # Met à jour l'affichage
+    clock.tick(FPS)  # Limite à 60 FPS
 pygame.quit()
 
 
